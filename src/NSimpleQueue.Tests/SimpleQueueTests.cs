@@ -50,7 +50,20 @@ namespace NSimpleQueue.Tests {
     }
 
     [Test]
-    public void Receive_WhenHavingTransactionAndOneItemAreAddedToQueue_FileAreReaddedToQueueWhen() {
+    public void Receive_WhenHavingTransactionAndOneItemAreAddedToQueue_FileIsRemovedFromFileSystemWhenCommited() {
+      using (var queue = new SimpleMessageQueue(new DirectoryInfo(QueuePath))) {
+        using (var transaction = queue.BeginTransaction()) {
+          queue.Enqueue(1);
+          var message = queue.Receive(new CancellationTokenSource().Token, transaction);
+
+          transaction.Commit();
+          Assert.IsFalse(new FileInfo(Path.Combine(QueuePath, "data", message.MessageId.ToString())).Exists);
+        }
+      }
+    }
+
+    [Test]
+    public void Receive_WhenHavingTransactionAndOneItemAreAddedToQueue_FileAreReaddedToQueueWhenRollback() {
       using (var queue = new SimpleMessageQueue(new DirectoryInfo(QueuePath))) {
         using (var transaction = queue.BeginTransaction()) {
           queue.Enqueue(1);

@@ -31,14 +31,17 @@ namespace NSimpleQueue.MessageStoring {
     public void Begin() {
       TransactionDirectory = _rootDirectory.CreateSubdirectory(Path.Combine("transactions", TransactionId.ToString()));
       TransactionDirectory.Refresh();
-      TransactionMetaDirectory = _rootDirectory.CreateSubdirectory(SimpleMessageQueueConstants.MetaDirectoryName);
-      TransactionDataDirectory = _rootDirectory.CreateSubdirectory(SimpleMessageQueueConstants.DataDirectoryName);
+      TransactionMetaDirectory = TransactionDirectory.CreateSubdirectory(SimpleMessageQueueConstants.MetaDirectoryName);
+      TransactionDataDirectory = TransactionDirectory.CreateSubdirectory(SimpleMessageQueueConstants.DataDirectoryName);
     }
 
     public DirectoryInfo TransactionDirectory { get; set; }
 
     public void Dispose()
     {
+      if (_isDisposing)
+        return;
+
       _isDisposing = true;
       if (!_isCommitedOrRolledBack) Rollback();
       TransactionDirectory.Delete(true);
@@ -60,8 +63,7 @@ namespace NSimpleQueue.MessageStoring {
       Dispose();
     }
 
-    public void Rollback() {
-      
+    public void Rollback() { 
       _isCommitedOrRolledBack = true;
       foreach (var simpleQueueMessage in _enlistedForRemoval) {
         Queue.Add(simpleQueueMessage);
