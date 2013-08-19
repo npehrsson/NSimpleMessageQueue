@@ -38,11 +38,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Comb.cs" />
+    <Compile Include="IInternalSimpleMessageQueueTransaction.cs" />
     <Compile Include="MessageStoring\FileMessageStore.cs" />
+    <Compile Include="MessageStoring\FileMessageStoreTransaction.cs" />
     <Compile Include="MessageStoring\IMessageStore.cs" />
     <Compile Include="InnerSimpleQueue.cs" />
     <Compile Include="ISimpleMessageQueue.cs" />
     <Compile Include="ISerializer.cs" />
+    <Compile Include="ISimpleMessageQueueTransaction.cs" />
     <Compile Include="MessageStoring\LockedFileWatcher.cs" />
     <Compile Include="MemoryQueueLookup.cs" />
     <Compile Include="MessageStoring\NewMessageEventArgs.cs" />

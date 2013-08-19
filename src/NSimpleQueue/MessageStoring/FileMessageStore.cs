@@ -4,17 +4,17 @@ using System.IO;
 using System.Runtime.Serialization;
 
 namespace NSimpleQueue.MessageStoring {
-  public class FileMessageStore : IMessageStore {
+  internal class FileMessageStore : IMessageStore {
+    private readonly string _directoryPath;
     private readonly DirectoryInfo _metaDirectory;
     private readonly DirectoryInfo _dataDirectory;
-    private readonly DirectoryInfo _directory;
     private readonly FileSystemWatcher _fileWatcher;
     private readonly LockedFileWatcher _lockedFileWatcher;
     private readonly HashSet<string> _filesToIgnoreList;
     private readonly object _lockObject;
 
     public FileMessageStore(string directoryPath) {
-      _directory = new DirectoryInfo(directoryPath);
+      _directoryPath = directoryPath;
       _metaDirectory = new DirectoryInfo(Path.Combine(directoryPath, SimpleMessageQueueConstants.MetaDirectoryName));
       _dataDirectory = new DirectoryInfo(Path.Combine(directoryPath, SimpleMessageQueueConstants.DataDirectoryName));
       _fileWatcher = new FileSystemWatcher(_dataDirectory.FullName) {
@@ -61,6 +61,12 @@ namespace NSimpleQueue.MessageStoring {
       using (var stream = File.OpenRead(Path.Combine(_dataDirectory.FullName, message.MessageId.ToString()))) {
         return Formatter.Deserialize(stream);
       }
+    }
+
+    public IInternalSimpleMessageQueueTransaction BeginTransaction() {
+      var transaction = new FileMessageStoreTransaction(this, new DirectoryInfo(_directoryPath), _dataDirectory, _metaDirectory);
+      transaction.Begin();
+      return transaction;
     }
 
     private SimpleQueueMessage GetMessage(FileInfo file) {

@@ -5,10 +5,10 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 
 namespace NSimpleQueue {
-  public class SimpleMessageMessageQueue : ISimpleMessageQueue {
+  public class SimpleMessageQueue : ISimpleMessageQueue {
     private readonly InnerSimpleQueue _innerQueue;
 
-    public SimpleMessageMessageQueue(DirectoryInfo directory) {
+    public SimpleMessageQueue(DirectoryInfo directory) {
       if (directory == null)
         throw new ArgumentNullException("directory");
 
@@ -39,6 +39,15 @@ namespace NSimpleQueue {
 
     public static void Delete(string directoryPath) {
       Directory.Delete(directoryPath, true);
+    }
+
+    public ISimpleMessageQueueTransaction BeginTransaction() {
+      return _innerQueue.BeginTransaction();
+    }
+
+    public SimpleQueueMessage Receive(CancellationToken cancellationToken, ISimpleMessageQueueTransaction transaction)
+    {
+      return _innerQueue.Receive(cancellationToken, transaction);
     }
 
     public SimpleQueueMessage Receive(CancellationToken cancellationToken) {

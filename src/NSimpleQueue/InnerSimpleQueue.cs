@@ -39,6 +39,13 @@ namespace NSimpleQueue {
       Queue.Add(e.Message);
     }
 
+    public ISimpleMessageQueueTransaction BeginTransaction() {
+      var transaction = _messageStore.BeginTransaction();
+      transaction.Queue = Queue;
+
+      return transaction;
+    }
+
     public SimpleQueueMessage Receive(CancellationToken cancellationToken) {
       var message = Queue.Take(cancellationToken);
       message.MessageStore = _messageStore;
@@ -46,6 +53,17 @@ namespace NSimpleQueue {
       var value = message.Payload;
       _messageStore.RemoveMessage(message);
 
+      return message;
+    }
+
+    public SimpleQueueMessage Receive(CancellationToken cancellationToken, ISimpleMessageQueueTransaction transaction) {
+      var message = Queue.Take(cancellationToken);
+      
+      message.MessageStore = _messageStore;
+      //just trigger it now we do not support lazy loading yet
+      var value = message.Payload;
+      transaction.EnlistForRemoval(message);
+      
       return message;
     }
 
