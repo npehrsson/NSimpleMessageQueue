@@ -61,5 +61,10 @@ namespace NSimpleQueue {
     public void Dispose() {
       MemoryQueueLookup.Current.UnSubscribe(_innerQueue);
     }
+
+    public static bool Exists(string queuePath)
+    {
+      return Directory.Exists(queuePath);
+    }
   }
 }

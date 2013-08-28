@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.IO;
+﻿using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,11 +7,14 @@ using NUnit.Framework;
 namespace NSimpleQueue.Tests {
   [TestFixture]
   public class SimpleQueueTests {
-    private const string QueuePath = @"c:\queue\";
+    private string QueuePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "Queue");
 
     [SetUp]
     public void Setup() {
-      SimpleMessageQueue.Delete(QueuePath);
+      if (SimpleMessageQueue.Exists(QueuePath)) {
+        SimpleMessageQueue.Delete(QueuePath);
+      }
+
       SimpleMessageQueue.Create(QueuePath, new BinaryFormatter());
     }
 
@@ -37,10 +39,8 @@ namespace NSimpleQueue.Tests {
 
     [Test]
     public void Receive_WhenHavingTransactionAndOneItemAreAddedToQueue_FileIsNotRemovedFromFileSystem() {
-      using (var queue = new SimpleMessageQueue(new DirectoryInfo(QueuePath)))
-      {
-        using (var transaction = queue.BeginTransaction())
-        {
+      using (var queue = new SimpleMessageQueue(new DirectoryInfo(QueuePath))) {
+        using (var transaction = queue.BeginTransaction()) {
           queue.Enqueue(1);
           var message = queue.Receive(new CancellationTokenSource().Token, transaction);
 
